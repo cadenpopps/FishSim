@@ -33,7 +33,7 @@ function School() {
    
    this.target = this.pos.copy();
 
-   var numFish = floor(random(FISHDENSITY - (FISHDENSITY/4), FISHDENSITY + (FISHDENSITY/4)));
+   var numFish = floor(random(FISHDENSITY - (FISHDENSITY/2), FISHDENSITY + (FISHDENSITY/2)));
    for (var i = 0; i < numFish; i++) {
       this.fish.push(new Fish(this));
    }
@@ -77,8 +77,8 @@ function School() {
    };
 
    this.display = function() {
-      fill(this.color[0], this.color[1], this.color[2]);
-      ellipse(this.pos.x, this.pos.y, this.size, this.size);
+    //   fill(this.color[0], this.color[1], this.color[2]);
+    //   ellipse(this.pos.x, this.pos.y, this.size, this.size);
       for (let f of this.fish) {
          f.display();
       }
