@@ -2,7 +2,6 @@ function Food(_x, _y) {
 
     this.x = _x;
     this.y = _y;
-    lifeSpan = 300;
 
     this.update = function() {
 
