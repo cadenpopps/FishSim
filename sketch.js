@@ -158,6 +158,14 @@ function mousePressed() {
     }
 }
 
+function mouseDragged() {
+    if (random(1) < .1) {
+        if (mouseY < height - 80 || mouseY > height - 20) {
+            addFood();
+        }
+    }
+}
+
 function windowResized() {
     resizeCanvas(windowWidth, windowHeight);
 }

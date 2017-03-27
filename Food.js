@@ -13,7 +13,7 @@ function Food(_x, _y) {
     this.display = function() {
 
         fill(50);
-        ellipse(this.x, this.y, 4, 4);
+        ellipse(this.x, this.y, 6, 6);
 
     };
 
