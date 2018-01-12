@@ -1,100 +1,105 @@
-function School(_x, _y) {
+function School(startX, startY) {
 
-   this.pos = createVector();
-   this.vel = createVector();
-   this.acc = createVector();
-   this.fish = [];
-   this.color = [3];
-   this.size = 50;
-   this.speed = random(.1, 1);
+	var pos = createVector();
+	var vel = createVector();
+	var acc = createVector();
+	var fish = new Array(floor(random(SCHOOLPOPULATION * .3, SCHOOLPOPULATION * 2)));
 
-   this.color[0] = floor(random(50, 255));
-   this.color[1] = floor(random(50, 255));
-   this.color[2] = floor(random(50, 255));
+	var edge = floor(random(4));
+	switch (edge) {
+		case 0:
+			pos.x = random(-100, width + 100);
+			pos.y = -FISHDENSITY * 1.5;
+			break;
+		case 1:
+			pos.x = width + FISHDENSITY * 1.5;
+			pos.y = random(-100, width + 100);
+			break;
+		case 2:
+			pos.x = random(-100, width + 100);
+			pos.y = height + FISHDENSITY * 1.5;
+			break;
+		case 3:
+			pos.x = -FISHDENSITY * 1.5;
+			pos.y = random(-100, height + 100);
+			break;
+	}
+	
+	if (startX && startY) {
+		pos.set(startX, startY);
+	}
 
-   if (_x == -1 && _y == -1) {
+	var target = createVector(random(0, width), random(0, height));
+	target.x = constrain(target.x, pos.x - 300, pos.x + 300);
+	target.y = constrain(target.y, pos.y - 300, pos.y + 300);
 
-      var edge = floor(random(4));
-      switch (edge) {
-         case 0:
-            this.pos.x = random(-100, width + 100);
-            this.pos.y = -50;
-            break;
-         case 1:
-            this.pos.x = width + 50;
-            this.pos.y = random(-100, width + 100);
-            break;
-         case 2:
-            this.pos.x = random(-100, width + 100);
-            this.pos.y = height + 50;
-            break;
-         case 3:
-            this.pos.x = -50;
-            this.pos.y = random(-100, height + 100);
-            break;
-      }
-   }
-   else {
-      this.pos.x = _x;
-      this.pos.y = _y;
-   }
 
-   this.target = this.pos.copy();
+	(function () {
+		var size = random(FISHSIZE, FISHSIZE * 1.5) / (fish.length / SCHOOLPOPULATION);
+		var speed = random(.7, 1.3) / (size / 20);
 
-   var numFish = floor(random(SCHOOLPOPULATION - (SCHOOLPOPULATION / 2), SCHOOLPOPULATION + (SCHOOLPOPULATION / 2)));
-   for (var i = 0; i < numFish; i++) {
-      this.fish.push(new Fish(this));
-   }
 
-   this.update = function() {
+		var color = new Array(3);
+		color[1] = floor(random(50, 240));
+		color[0] = floor(random(0, 90));
+		color[2] = floor(random(120, 255));
 
-      this.vel.mult(.95);
+		for (var i = 0; i < fish.length; i++) {
+			fish[i] = new Fish(pos, size, speed, color);
+		}
+	})();
 
-      var food = false;
-      var closestFood = 1000000;
+	this.update = function () {
 
-      for (let f of foods) {
-         var distFood = pow(this.pos.x - f.x, 2) + pow(this.pos.y - f.y, 2);
-         if (distFood < closestFood) {
-            food = true;
-            closestFood = distFood;
-            this.target = createVector(f.x, f.y);
-         }
-      }
+		vel.mult(.95);
 
-      var attract = createVector(this.target.x, this.target.y);
+		var closestFood = 1000000;
 
-      attract.sub(this.pos);
-      this.pos.add(this.vel);
-      this.vel.add(this.acc);
-      this.acc = attract.mult(.001);
+		for (var i = foods.length - 1; i >= 0; i--) {
+			var foodPos = foods[i].getPos();
+			var distFood = abs(pos.x - foodPos.x) + abs(pos.y - foodPos.y);
+			if (distFood < 800) {
+				if (distFood < closestFood) {
+					closestFood = distFood;
+					target = createVector(foodPos.x, foodPos.y);
+				}
+			}
+		}
 
-      //shift target position
-      if (random(1) < SCHOOLMOVESPEED) {
-         this.target.x += random(-40, 40);
-         this.target.y += random(-40, 40);
-      }
+		var attract = createVector(target.x, target.y);
 
-      for (let f of this.fish) {
-         f.update();
-      }
-      this.constrainPos();
+		attract.sub(pos);
+		pos.add(vel);
+		vel.add(acc);
+		acc = attract.mult(.001);
 
-      return true;
+		//shift target position
+		if (random(1) < SCHOOLMOVESPEED) {
+			target.x += random(-40, 40);
+			target.y += random(-40, 40);
+		}
 
-   };
+		for (let f of fish) {
+			f.update(pos);
+		}
 
-   this.constrainPos = function() {
-      this.pos.x = constrain(this.pos.x, -50, width + 50);
-      this.pos.y = constrain(this.pos.y, -50, height + 50);
-   };
+		return constrainPos();
 
-   this.display = function() {
-      // fill(this.color[0], this.color[1], this.color[2]);
-      // rect(this.pos.x, this.pos.y, this.size, this.size);
-      for (let f of this.fish) {
-         f.display();
-      }
-   };
+	};
+
+	var constrainPos = function () {
+		if (pos.x < -FISHDENSITY * 4 || pos.x > width + (FISHDENSITY * 4)) {
+			return true;
+		}
+		if (pos.y < -FISHDENSITY * 4 || pos.y > height + (FISHDENSITY * 4)) {
+			return true;
+		}
+	};
+
+	this.display = function () {
+		for (let f of fish) {
+			f.display();
+		}
+	};
 
 }

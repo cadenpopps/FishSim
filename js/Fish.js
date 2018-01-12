@@ -1,89 +1,102 @@
-function Fish(_parentSchool) {
+function Fish(parentPos, parentSize, parentSpeed, parentColor) {
 
-    this.parentSchool = _parentSchool;
-    this.pos = createVector();
-    this.vel = createVector();
-    this.acc = createVector();
-    this.off = createVector();
+	var pos = createVector();
+	var vel = createVector();
+	var acc = createVector();
+	var offset = createVector();
 
-    this.off.x = random(-50, 50);
-    this.off.y = random(-50, 50);
+	offset.x = random(-FISHDENSITY, FISHDENSITY);
+	offset.y = random(-FISHDENSITY, FISHDENSITY);
 
-    this.pos.x = this.parentSchool.pos.x + this.off.x;
-    this.pos.y = this.parentSchool.pos.y + this.off.y;
+	pos.x = parentPos.x + offset.x;
+	pos.y = parentPos.y + offset.y;
 
-    this.size = random(5, 10);
-    this.speed = this.parentSchool.speed * FISHSPEEDLIMIT / this.size;
-    this.wiggleOffset = floor(random(250));
+	var size = parentSize + random(FISHSIZE - (FISHSIZE / 2), FISHSIZE + (FISHSIZE / 2));
+	var speed = parentSpeed * FISHSPEEDLIMIT / (size / 5);
+	if (speed < 1) {
+		speed = 1;
+	}
+	var wiggleOffset = floor(random(250));
 
-    this.color = [];
-    this.color[0] = this.parentSchool.color[0] + floor(random(-15, 15));
-    this.color[1] = this.parentSchool.color[1] + floor(random(-15, 15));
-    this.color[2] = this.parentSchool.color[2] + floor(random(-15, 15));
+	var color = new Array(3);
+	color[0] = parentColor[0] + floor(random(-10, 10));
+	color[1] = parentColor[1] + floor(random(-10, 10));
+	color[2] = parentColor[2] + floor(random(-10, 10));
 
-    this.update = function() {
+	var food = false;
+	var closestFood = 100000;
+	var attractX = 0;
+	var attractY = 0;
+	var distFood = 0;
 
-        this.vel.mult(.95);
-        this.speed = this.parentSchool.speed * FISHSPEEDLIMIT / this.size;
-        this.vel.x = constrain(this.vel.x, -this.speed, this.speed);
-        this.vel.y = constrain(this.vel.y, -this.speed, this.speed);
+	this.update = function (parentPos) {
 
-        if (random(1) < FISHMOVESPEED) {
-            this.off.x = constrain(this.off.x + random(-10, 10), -FISHDENSITY * 3, FISHDENSITY * 3) + random(-FISHDENSITY, FISHDENSITY);
-            this.off.y = constrain(this.off.y + random(-10, 10), -FISHDENSITY * 3, FISHDENSITY * 3) + random(-FISHDENSITY, FISHDENSITY);
-        }
+		vel.mult(.95);
+		vel.x = constrain(vel.x, -speed, speed);
+		vel.y = constrain(vel.y, -speed, speed);
 
-        var food = false;
-        var closestFood = 1000000;
+		if (random(1) < FISH_MOVE_RATE) {
+			offset.x = constrain(offset.x + random(-30, 30), -FISHDENSITY, FISHDENSITY);
+			offset.y = constrain(offset.y + random(-30, 30), -FISHDENSITY, FISHDENSITY);
+		}
 
-        for (var i = foods.length - 1; i >= 0; i--) {
-            var distFood = abs(this.pos.x - foods[i].x, 2) + abs(this.pos.y - foods[i].y, 2);
-            if (distFood < closestFood) {
-                food = true;
-                closestFood = distFood;
-                var attract = createVector(foods[i].x + random(-150, 150), foods[i].y + random(-150, 150));
-            }
-            if (distFood < this.size) {
-                if (Math.hypot(abs(this.pos.x - foods[i].x), abs(this.pos.y - foods[i].y)) < this.size) {
-                    foods.splice(i, 1);
-                    this.size += 5;
-                }
-            }
-        }
-        if (!food) {
-            var attract = createVector(this.parentSchool.pos.x + this.off.x, this.parentSchool.pos.y + this.off.y);
-        }
+		food = false;
+		closestFood = 1000000;
+		distFood = 10000;
 
-        if ((millis() + this.wiggleOffset) % 500 < 250) {
-            attract.x = this.pos.x;
-        }
-        else {
-            attract.y = this.pos.y;
-        }
+		for (var i = foods.length - 1; i >= 0; i--) {
+			var foodPos = foods[i].getPos();
+			distFood = abs(pos.x - foodPos.x) + abs(pos.y - foodPos.y);
+			if (distFood < 800) {
+				food = true;
+				if (distFood < closestFood) {
+					closestFood = distFood;
+					attractX = foodPos.x + random(-200, 200);
+					attractY = foodPos.y + random(-200, 200);
+				}
+				if (distFood < 150) {
+					if (dist(pos.x, pos.y, foodPos.x, foodPos.y) < (size + foods[i].getSize()) / 2) {
+						foods.splice(i, 1);
+						size += 10;
+					}
+					else {
+						attractX = foodPos.x + random(-5, 5);
+						attractY = foodPos.y + random(-5, 5);
+					}
+				}
+			}
+		}
 
-        attract.sub(this.pos);
-        this.pos.add(this.vel);
-        this.vel.add(this.acc);
-        if (food) {
-            this.acc = attract.mult(.005 * (FISHSPEEDLIMIT / 20));
-        }
-        else {
-            this.acc = attract.mult(.001 * (FISHSPEEDLIMIT / 20));
-        }
+		if (!food) {
+			attractX = parentPos.x + offset.x;
+			attractY = parentPos.y + offset.y;
+		}
 
-        if (this.size > 60) {
-            for (var i = 0; i < 10; i++) {
-                this.parentSchool.fish.push(new Fish(this.parentSchool));
-            }
+		if ((millis() + wiggleOffset) % 500 < 250) {
+			attractX = pos.x;
+		}
+		else {
+			attractY = pos.y;
+		}
 
-            this.size = 10;
-        }
+		attractX -= pos.x;
+		attractY -= pos.y;
+		pos.add(vel);
+		vel.add(acc);
+		if (food) {
+			acc.x = attractX * (.005 * (FISHSPEEDLIMIT / 20));
+			acc.y = attractY * (.005 * (FISHSPEEDLIMIT / 20));
 
-    };
+		}
+		else {
+			acc.x = attractX * (.001 * (FISHSPEEDLIMIT / 20));
+			acc.y = attractY * (.001 * (FISHSPEEDLIMIT / 20));
+		}
+	};
 
-    this.display = function() {
-        fill(this.color[0], this.color[1], this.color[2]);
-        ellipse(this.pos.x, this.pos.y, this.size, this.size);
-    };
+	this.display = function () {
+		fill(color[0], color[1], color[2]);
+		ellipse(pos.x, pos.y, size, size);
+	};
 
 }

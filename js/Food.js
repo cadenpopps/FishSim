@@ -1,20 +1,29 @@
 function Food(_x, _y) {
 
-    this.x = _x;
-    this.y = _y;
+	var pos = createVector(_x, _y);
+	var originalPos = createVector(_x, _y);
+	var size = floor(random(12, 22));
+	var floatOffset = millis()+floor(random(0,100));
+	var floatSpeed = floor(random(830, 850)) - (size * 3);
 
-    this.update = function() {
+	this.getPos = function() {
+		return pos;
+	};
+	
+	this.getSize = function() {
+		return size;
+	};
 
-        this.x += random(-.4, .4);
-        this.y += random(-.4, .4);
+	this.update = function() {
+		pos.x = originalPos.x + sin((millis() - floatOffset) / floatSpeed) * 10;
+		pos.y = originalPos.y - abs(sin((millis() - floatOffset) / floatSpeed) * 8);
+	};
 
-    };
-
-    this.display = function() {
-
-        fill(50);
-        ellipse(this.x, this.y, 6, 6);
-
-    };
+	this.display = function() {
+		stroke(240);
+		strokeWeight(size);
+		point(pos.x, pos.y);
+		noStroke();
+	};
 
 }
