@@ -5,28 +5,29 @@ function School(startX, startY) {
 	var acc = createVector();
 	var fish = new Array(floor(random(SCHOOLPOPULATION * .3, SCHOOLPOPULATION * 2)));
 
-	var edge = floor(random(4));
-	switch (edge) {
-		case 0:
-			pos.x = random(-100, width + 100);
-			pos.y = -FISHDENSITY * 1.5;
-			break;
-		case 1:
-			pos.x = width + FISHDENSITY * 1.5;
-			pos.y = random(-100, width + 100);
-			break;
-		case 2:
-			pos.x = random(-100, width + 100);
-			pos.y = height + FISHDENSITY * 1.5;
-			break;
-		case 3:
-			pos.x = -FISHDENSITY * 1.5;
-			pos.y = random(-100, height + 100);
-			break;
-	}
-	
 	if (startX && startY) {
 		pos.set(startX, startY);
+	}
+	else {
+		var edge = floor(random(4));
+		switch (edge) {
+			case 0:
+				pos.x = random(-100, width + 100);
+				pos.y = -(BOUNDARY - FISHDENSITY * 2);
+				break;
+			case 1:
+				pos.x = width + (BOUNDARY - FISHDENSITY * 2);
+				pos.y = random(-100, width + 100);
+				break;
+			case 2:
+				pos.x = random(-100, width + 100);
+				pos.y = height + (BOUNDARY - FISHDENSITY * 2);
+				break;
+			case 3:
+				pos.x = -(BOUNDARY - FISHDENSITY * 2);
+				pos.y = random(-100, height + 100);
+				break;
+		}
 	}
 
 	var target = createVector(random(0, width), random(0, height));
@@ -50,7 +51,6 @@ function School(startX, startY) {
 	})();
 
 	this.update = function () {
-
 		vel.mult(.95);
 
 		var closestFood = 1000000;
@@ -88,18 +88,23 @@ function School(startX, startY) {
 	};
 
 	var constrainPos = function () {
-		if (pos.x < -FISHDENSITY * 4 || pos.x > width + (FISHDENSITY * 4)) {
+		if (pos.x < -BOUNDARY || pos.x > width + BOUNDARY) {
 			return true;
 		}
-		if (pos.y < -FISHDENSITY * 4 || pos.y > height + (FISHDENSITY * 4)) {
+		if (pos.y < -BOUNDARY || pos.y > height + BOUNDARY) {
 			return true;
 		}
+		return false;
 	};
 
 	this.display = function () {
 		for (let f of fish) {
 			f.display();
 		}
+
+		stroke(255, 0, 0);
+		point(pos.x, pos.y, 30);
+		noStroke();
 	};
 
 }
